@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # 1. Object Storage (S3-compatible)
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z # Versi rilis stabil terbaru
+    container_name: minio_storage
+    ports:
+      - "9000:9000" # API Port
+      - "9001:9001" # Console/UI Port
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
+  # Container pendek untuk membuat bucket secara otomatis saat MinIO hidup
+  minio-init:
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    container_name: minio_init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set myminio http://minio:9000 minioadmin minioadmin123;
+      mc mb myminio/bronze || true;
+      mc mb myminio/silver || true;
+      mc mb myminio/gold || true;
+      mc mb myminio/rejected || true;
+      mc policy set public myminio/bronze;
+      exit 0;
+      "
+
+  # 2. PySpark Processing Environment
+  spark-env:
+    image: jupyter/pyspark-notebook:spark-3.5.0 # Versi Spark stabil (3.5.x) dengan Python 3.11
+    container_name: spark_workspace
+    ports:
+      - "8888:8888" # Jupyter UI Port
+      - "4040:4040" # Spark UI Port
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=spatial # Token statis untuk mempermudah login
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin123
+      - AWS_ENDPOINT_URL=http://minio:9000
+    volumes:
+      - ./:/home/jovyan/work # Mount direktori proyek lokal ke dalam container
+    depends_on:
+      - minio
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+
+  # 3. Dagster Orchestrator (Webserver & Daemon)
+  dagster-webserver:
+    build:
+      context: .
+      dockerfile: Dockerfile.dagster
+    container_name: dagster_ui
+    ports:
+      - "3000:3000" # Dagster UI Port
+    environment:
+      - DAGSTER_HOME=/opt/dagster/dagster_home
+    volumes:
+      - ./:/opt/dagster/app # Mount direktori proyek untuk membaca DAG
+      - dagster_data:/opt/dagster/dagster_home
+    command: ["dagster-webserver", "-h", "0.0.0.0", "-p", "3000", "-w", "/opt/dagster/app/workspace.yaml"]
+    depends_on:
+      - minio
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
+  dagster-daemon:
+    build:
+      context: .
+      dockerfile: Dockerfile.dagster
+    container_name: dagster_daemon
+    environment:
+      - DAGSTER_HOME=/opt/dagster/dagster_home
+    volumes:
+      - ./:/opt/dagster/app
+      - dagster_data:/opt/dagster/dagster_home
+    command: ["dagster-daemon", "run"]
+    depends_on:
+      - dagster-webserver
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
+volumes:
+  minio_data:
+  dagster_data:

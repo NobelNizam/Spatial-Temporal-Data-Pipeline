@@ -8,7 +8,7 @@
 
 - **Nama:** Spatial-Temporal Data Pipeline dengan Justifikasi Engineering Berbasis Bukti
 - **Tujuan:** Membangun pipeline data Bronze-Silver-Gold skala lokal yang menggabungkan data time-series kualitas air (puluhan GB) dengan data kepadatan penduduk (raster WorldPop, 14 stasiun), sambil membuktikan secara empiris (lewat profiling & benchmark) bahwa setiap pilihan teknologi memang dibutuhkan — bukan sekadar mengikuti tren arsitektur enterprise.
-- **Status:** Blueprint v0.2 — belum mulai implementasi. Tahap saat ini: Minggu 1 (Profiling & Infrastructure).
+- **Status:** Blueprint v0.3 — Minggu 1 Selesai. Masuk ke implementasi Bronze Ingest.
 
 ---
 
@@ -30,7 +30,7 @@ Menghasilkan portofolio Data Engineering yang **defensible** di wawancara teknis
 
 Fitur yang sudah disepakati (sesuai Blueprint v0.2):
 
-- [ ] Dataset profiling awal (rows, cols, cardinality, ukuran per partisi) → dasar pemilihan engine
+- [x] Dataset profiling awal (rows, cols, cardinality, ukuran per partisi) → dasar pemilihan engine
 - [ ] Bronze Layer: ingest raw CSV kualitas air + GeoTIFF WorldPop ke object storage / `data/bronze/`
 - [ ] Silver Layer — jalur fact table: validasi native (null rate, duplikasi, tipe kolom, skema), baris gagal → `data/rejected/`
 - [ ] Silver Layer — jalur dimension table: ekstraksi populasi 14 stasiun via `rasterio` (clip radius, bukan full raster)
@@ -53,11 +53,11 @@ Fitur yang sudah disepakati (sesuai Blueprint v0.2):
 ## 5. Tech Stack
 
 - **Frontend:** Tidak ada (proyek ini murni data pipeline, tidak ada UI).
-- **Backend / Processing Engine:** Engine final ditentukan oleh hasil profiling (Bagian 5.1 Blueprint v0.2), dengan threshold: <5GB → Pandas, 5–20GB → Polars/DuckDB, >20GB atau perlu demonstrasi ekosistem distributed → PySpark. Sampai profiling selesai, **anggap PySpark sebagai default eksplorasi**, tapi tidak final.
+- **Backend / Processing Engine:** Engine final ditentukan oleh hasil profiling (Bagian 5.1 Blueprint v0.2), dengan threshold >20GB. Berdasarkan profiling aktual (23.29 GB), **PySpark telah ditetapkan sebagai engine utama**.
 - **Spatial Processing:** `rasterio` (untuk clip raster WorldPop, hanya 14 titik koordinat stasiun).
 - **Database / Storage Format:** Apache Parquet (Gold Layer), partisi `station_id` + `year`.
 - **Object Storage:** MinIO (S3-compatible) — fallback ke folder lokal `data/bronze|silver|gold/` jika kompleksitas operasional tidak proporsional.
-- **Orchestration:** Dagster atau Mage.ai (ringan; Airflow secara sengaja TIDAK dipakai).
+- **Orchestration:** Dagster (ringan; Airflow secara sengaja TIDAK dipakai).
 - **Infrastructure:** Docker / docker-compose untuk membungkus object storage + processing engine.
 - **Deployment:** Lokal-reproducible saja, tidak ada deployment cloud dalam scope ini.
 
@@ -130,8 +130,8 @@ Hal-hal yang TIDAK BOLEH dilakukan tanpa diskusi ulang:
 - [x] Review teknis (2 reviewer) selesai
 - [x] Blueprint v0.2 selesai (revisi berdasarkan review)
 - [x] PROJECT_CONTEXT.md dibuat
-- [ ] Profiling dataset kualitas air belum dijalankan
-- [ ] Belum ada kode/implementasi
+- [x] Profiling dataset kualitas air selesai (23.29 GB)
+- [x] Infrastruktur Docker (MinIO, Dagster, PySpark) aktif. Belum ada kode pipeline.
 
 ---
 
@@ -151,10 +151,10 @@ Hal-hal yang TIDAK BOLEH dilakukan tanpa diskusi ulang:
 
 ## 11. Known Issues
 
-- Belum ada implementasi sama sekali — semua item di atas masih dalam tahap perencanaan.
-- Hasil profiling (rows/cols/cardinality dataset kualitas air) belum diisi, sehingga keputusan engine final masih bersifat sementara (default eksplorasi: PySpark).
-- Belum diputuskan final antara Dagster vs Mage.ai untuk orkestrator — perlu evaluasi kemudahan setup lokal.
-- Belum diputuskan final antara MinIO vs filesystem lokal — tergantung apakah demonstrasi interoperabilitas S3 dianggap perlu.
+- Infrastruktur Docker sudah berdiri. Menunggu implementasi Bronze Layer.
+- Hasil profiling sudah selesai (23.29GB, 62.9Jt baris). PySpark resmi dipilih.
+- Dagster secara resmi terpilih dan sudah running dalam container.
+- MinIO S3 resmi digunakan.
 
 ---
 

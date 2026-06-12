@@ -1,0 +1,44 @@
+# Project Instructions
+GEMINI.md
+
+# Environment variables
+.env
+
+# Data Layers (Very Critical)
+data/bronze/*
+data/silver/*
+data/gold/*
+data/rejected/*
+
+# Keep the data folder structure
+!data/bronze/.gitkeep
+!data/silver/.gitkeep
+!data/gold/.gitkeep
+!data/rejected/.gitkeep
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Dagster internal data
+/dagster_home/
+*.db
+*.sqlite
+
+# Spark/Jupyter logs & metadata
+spark-warehouse/
+metastore_db/
+derby.log
+.ipynb_checkpoints/
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# IDE Settings
+.vscode/
+.idea/
+.DS_Store

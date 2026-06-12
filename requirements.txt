@@ -1,0 +1,15 @@
+# Core Data Engineering Dependencies
+# Dikonfigurasi berdasarkan resolusi kompatibilitas Docker (Lihat docs/STATUS_LOG.md)
+
+# 1. Processing Engine
+# KRITIS: PySpark harus dikunci di versi 3.5.0 agar sesuai dengan JVM Engine 
+# di dalam image jupyter/pyspark-notebook:spark-3.5.0. 
+# Versi > 4.x akan menyebabkan crash 'JavaPackage is not callable'.
+pyspark==3.5.0
+
+# 2. Orchestration (Dagster)
+dagster==1.7.5
+dagster-webserver==1.7.5
+
+# 3. Data Profiling & Utilities
+pandas
