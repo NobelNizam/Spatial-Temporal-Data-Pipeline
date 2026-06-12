@@ -58,3 +58,31 @@ Sesuai dengan instruksi `GEMINI.md`, setelah selesainya Milestone Minggu 1 dan p
 - File `PROJECT_CONTEXT.md` ditingkatkan versinya menjadi **`PROJECT_CONTEXT_v0.1.md`**.
 - File `Project_Blueprint_v0.2.md` ditingkatkan versinya menjadi **`Project_Blueprint_v0.3.md`**.
 - Semua *checkbox* pada "Pending Tasks" untuk fase setup telah ditandai selesai (`[x]`), dan ketidakpastian (*Known Issues*) terkait infrastruktur telah dihapus.
+
+---
+
+## 5. Status Perkembangan Proyek (Minggu 2 - Ingestion Layer)
+**Fase Saat Ini:** Minggu 2 - Bronze Ingest
+**Status:** **SELESAI**
+
+**Pencapaian:**
+1. **Pemutakhiran Dependensi:** Telah ditambahkan dependensi *library* sistem (`gdal-bin`, `libgdal-dev`, `gcc`, `default-jre`) dan Python (`boto3`, `minio`, `rasterio`, `pyspark`) ke dalam `Dockerfile.dagster` agar lingkungan eksekusi memiliki semua *tools* yang dibutuhkan.
+2. **Implementasi Ingest (Fail-Fast):** Menulis fungsi `ingest_to_minio` di `src/pipelines/bronze_ingest.py` yang menggunakan `boto3`. Menerapkan prinsip *idempotency* berdasarkan *content length* file dan *fail-fast error handling* untuk kegagalan lokal.
+3. **Eksekusi Dagster Asset:** Mengintegrasikan `bronze_ingest.py` ke dalam Dagster lewat `@asset` di `orchestration/pipeline_dag.py`. Saat dieksekusi, sistem sukses mengunggah 326 file (data stasiun, density map) ke S3-API lokal (`myminio/bronze`).
+
+## 6. Jurnal Permasalahan & Resolusi (Minggu 2)
+
+### Isu 1: ModuleNotFoundError 'boto3' dalam Dagster Container
+- **Gejala:** Skrip eksekusi gagal diimpor oleh Dagster code server karena modul `boto3` tidak dikenali. `docker exec dagster_ui pip list` membuktikan paket tersebut nihil.
+- **Analisis:** Image Dagster secara default dibangun hanya dengan fungsionalitas inti, tanpa dependensi *data engineering*. 
+- **Resolusi:** Memutakhirkan `Dockerfile.dagster` agar menjalankan `pip install boto3 minio rasterio pyspark pandas` serta menyertakan paket *system-level* untuk C++ kompilasi (`libgdal-dev` dll). Me-*restart* dan me-*rebuild* layanan `dagster-webserver` dan `dagster-daemon`.
+
+### Isu 2: Error "Executable file not found in $PATH" untuk Java
+- **Gejala:** Memeriksa keberadaan Java pada `dagster_daemon` memberikan kode gagal. Hal ini dikarenakan *base image* Python-slim tidak menyertakan JRE secara *default*.
+- **Resolusi:** Mengintegrasikan `apt-get install -y default-jre` ke dalam `Dockerfile.dagster` agar *container* mampu menjembatani eksekusi PySpark ke depannya jika *engine* digunakan di *asset* Silver.
+
+## 7. Pembaruan File Rujukan (Minggu 2)
+Sesuai prosedur pelaporan:
+- Progres log Minggu 2 ditambahkan di **`UPDATE_STATUS.md`**.
+- File `PROJECT_CONTEXT_v0.1.md` diperbarui menjadi **`PROJECT_CONTEXT_v0.2.md`**.
+- File `Project_Blueprint_v0.3.md` diperbarui menjadi **`Project_Blueprint_v0.4.md`**.

@@ -151,7 +151,8 @@ Hal-hal yang TIDAK BOLEH dilakukan tanpa diskusi ulang:
 
 ## 11. Known Issues
 
-- Infrastruktur Docker sudah berdiri. Menunggu implementasi Bronze Layer.
+- Infrastruktur Docker sudah berdiri dan dependensi kontainer telah dimutakhirkan (Dockerfile.dagster dengan boto3, minio, rasterio).
+- Fase Ingestion Layer (Bronze) telah selesai. 326 file raw berhasil diunggah ke MinIO.
 - Hasil profiling sudah selesai (23.29GB, 62.9Jt baris). PySpark resmi dipilih.
 - Dagster secara resmi terpilih dan sudah running dalam container.
 - MinIO S3 resmi digunakan.

@@ -186,8 +186,8 @@ spatial-temporal-pipeline/
 **Risiko Teknis 4 (Baru): OOM pada Host System.** Memproses 23GB data menggunakan PySpark pada laptop dengan RAM 16GB berisiko tinggi mematikan kontainer OS secara tiba-tiba (*OOMKilled*).
 **Mitigasi 4:** Konfigurasi ketat di `engine_session.py` untuk mengunci Spark di maksimal 4 CPU Cores dan 4GB JVM Memory, memicu sistem *spill* Spark tanpa membahayakan RAM sisa dari OS *host*.
 
-**Risiko Operasional: Ketergantungan pada Orkestrator.** Menambahkan Dagster menambah satu komponen _setup_ baru.
-**Mitigasi:** Telah disediakan *custom Dockerfile* dan *docker-compose.yml* agar Dagster berdiri secara otomatis dengan *bind-mount* volume agar modifikasi aset bisa real-time tanpa *rebuild*.
+**Risiko Operasional: Ketergantungan pada Orkestrator & Dependensi Lingkungan.** Menambahkan Dagster menambah satu komponen _setup_ baru. Eksekusi skrip membutuhkan banyak paket sistem (seperti libgdal) yang tidak selalu ada secara default.
+**Mitigasi:** Telah disediakan *custom Dockerfile* dan *docker-compose.yml* agar Dagster berdiri secara otomatis dengan *bind-mount* volume agar modifikasi aset bisa real-time tanpa *rebuild*. Semua dependensi krusial telah dibungkus ke dalam *image* via Dockerfile.dagster.
 
 ---
 

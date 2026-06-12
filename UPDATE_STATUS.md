@@ -25,3 +25,28 @@ Sejalan dengan penyelesaian *Milestone* Minggu 1 (Profiling & Setup Infrastruktu
 - **Bagian 5.3 (Orkestrasi Ringan):** Secara eksplisit menghapus referensi Mage.ai dan menetapkan Dagster sebagai orkestrator tunggal.
 - **Bagian 7 (Development Roadmap):** Menandai bahwa Minggu 1 (Profiling & Infrastructure) telah diselesaikan secara penuh.
 - **Bagian 8 (Risks):** Menambahkan Risiko 4 terkait *Out of Memory* (OOM) pada mesin lokal dan mitigasinya via pembatasan eksekutor Spark di `engine_session.py` (4 Cores, 4GB RAM).
+
+---
+
+**Date:** June 13, 2026
+**Location of Update:** `/home/bishamon/proyek/Spatial-Temporal-Data-Pipeline/UPDATE_STATUS.md`
+
+## 1. Reason for Update
+Tahap **Ingestion Layer (Bronze)** telah berhasil diimplementasikan dan dieksekusi. Skrip `bronze_ingest.py` berhasil memindahkan 326 file *raw* (CSV kualitas air dan GeoTIFF kepadatan penduduk) dari direktori lokal ke dalam MinIO Object Storage (bucket `bronze`). Integrasi *asset* dengan Dagster Orchestrator juga telah berhasil diverifikasi. Dokumen rujukan proyek perlu diperbarui untuk mencatat perpindahan status dari "Memasuki implementasi Bronze" menjadi "Bronze Layer Selesai, berlanjut ke Silver Layer".
+
+## 2. Status Perkembangan Proyek
+- **Fase:** Implementasi **Bronze Layer telah SELESAI**. Selanjutnya akan masuk ke tahap Silver Layer (Validation & Dimension Extraction).
+- **Infrastruktur & Dependensi:** Container Dagster (`dagster_daemon` dan `dagster_ui`) telah diperbarui (`Dockerfile.dagster`) untuk mencakup paket-paket Python krusial untuk keseluruhan *pipeline* seperti `boto3`, `minio`, `pyspark` (dengan Java Runtime), dan `rasterio` (dengan libgdal C++ backend).
+- **Ingestion Log:** Total 326 file sukses tertampung di MinIO S3 API *endpoint* yang direpresentasikan dalam `myminio/bronze/`.
+
+## 3. Komparasi Pembaruan File Rujukan
+
+### A. PROJECT_CONTEXT_v0.2.md (Ditingkatkan dari v0.1.md)
+- **Bagian 1 (Status):** Diubah dari "Masuk ke implementasi Bronze Ingest." menjadi "Bronze Layer selesai. Masuk ke implementasi Silver Validation & Spatial Enrichment."
+- **Bagian 4 (Current Scope):** *Checkbox* fitur Bronze Layer ("Bronze Layer: ingest raw CSV kualitas air + GeoTIFF WorldPop ke object storage") telah ditandai selesai `[x]`.
+- **Bagian 10 (Pending Tasks):** Poin "Setup Docker untuk object storage" dan "Implementasi Bronze ingest" telah ditandai selesai. Tugas prioritas selanjutnya bergeser ke poin 5 (Implementasi Silver: validasi native + ekstraksi dimensi).
+- **Bagian 11 (Known Issues):** Dihapus masalah "Menunggu implementasi Bronze Layer." karena sudah selesai. Menambahkan informasi bahwa dependensi kontainer telah dimutakhirkan.
+
+### B. Project_Blueprint_v0.4.md (Ditingkatkan dari v0.3.md)
+- **Bagian 7 (Development Roadmap):** Menandai target implementasi Bronze di "Minggu 2" sebagai selesai, mengunci fokus selanjutnya pada *Validation* dan pembentukan *Dimension Table* `rasterio`.
+- **Bagian 8 (Risks):** Mencatat berhasilnya mitigasi atas ketidakhadiran *environment dependencies* (seperti *module not found `boto3`*) dengan otomatisasi melalui *custom* `Dockerfile.dagster`.

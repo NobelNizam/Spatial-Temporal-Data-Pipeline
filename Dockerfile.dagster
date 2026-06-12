@@ -1,11 +1,23 @@
 FROM python:3.11-slim
 
+# Install system dependencies for Java (PySpark) and spatial libs (rasterio)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    default-jre \
+    gdal-bin \
+    libgdal-dev \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Dagster and data engineering dependencies
 RUN pip install --no-cache-dir \
     dagster==1.7.5 \
-    dagster-webserver==1.7.5
-
-# Install any additional pipeline dependencies if needed later
-# RUN pip install pandas polars duckdb pyspark
+    dagster-webserver==1.7.5 \
+    pyspark==3.5.0 \
+    pandas \
+    boto3 \
+    minio \
+    rasterio
 
 WORKDIR /opt/dagster/app
 
