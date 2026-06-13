@@ -50,3 +50,29 @@ Tahap **Ingestion Layer (Bronze)** telah berhasil diimplementasikan dan diekseku
 ### B. Project_Blueprint_v0.4.md (Ditingkatkan dari v0.3.md)
 - **Bagian 7 (Development Roadmap):** Menandai target implementasi Bronze di "Minggu 2" sebagai selesai, mengunci fokus selanjutnya pada *Validation* dan pembentukan *Dimension Table* `rasterio`.
 - **Bagian 8 (Risks):** Mencatat berhasilnya mitigasi atas ketidakhadiran *environment dependencies* (seperti *module not found `boto3`*) dengan otomatisasi melalui *custom* `Dockerfile.dagster`.
+
+---
+
+**Date:** June 13, 2026
+**Location of Update:** `/home/bishamon/proyek/Spatial-Temporal-Data-Pipeline/UPDATE_STATUS.md`
+
+## 1. Reason for Update
+Tahap **Exploratory Data Analysis (EDA)** untuk transisi Bronze-to-Silver Layer telah berhasil diselesaikan secara komprehensif pada Jupyter Notebook dan diekstrak laporannya. Keputusan krusial mengenai struktur tabel dimensi vs fakta serta logika pembersihan data (Regex untuk left-censored data, filter threshold, drop malformed CSV) telah didefinisikan. Dokumen rujukan proyek perlu diperbarui untuk mencatat perpindahan ke tahap implementasi skrip `silver_validate.py`.
+
+## 2. Status Perkembangan Proyek
+- **Fase:** EDA Transisi Bronze-Silver **SELESAI**. Selanjutnya akan masuk ke koding validasi Silver Layer.
+- **Data Anomalies Discovered:** 
+  - Data stasiun bukanlah tabel dimensi statis, melainkan data observasi transaksional (>60 juta baris).
+  - Ditemukan >16 juta baris data tersensor (misal `<0.5`) yang harus dibersihkan dengan regex agar tidak merusak typecasting float.
+  - Ditemukan column-shifting akibat escaped quotes CSV yang rusak.
+- **Documentation:** Pembuatan `docs/EDA.md`.
+
+## 3. Komparasi Pembaruan File Rujukan
+
+### A. PROJECT_CONTEXT_v0.3.md (Ditingkatkan dari v0.2.md)
+- **Bagian 1 (Status):** Diubah menjadi "EDA selesai. Masuk ke implementasi script silver_validate.py."
+- **Bagian 11 (Known Issues):** Mencatat temuan anomali data (Left-censored & Column shifting) dari data stasiun.
+
+### B. Project_Blueprint_v0.5.md (Ditingkatkan dari v0.4.md)
+- **Bagian 3 (Functional Requirements):** Menambahkan detail validasi Silver Layer berupa regex stripping dan DROPMALFORMED.
+- **Bagian 6 (System Architecture):** Menjelaskan pemisahan Dimension Extraction dari Fact Table WIMS EA di dalam Silver Layer.

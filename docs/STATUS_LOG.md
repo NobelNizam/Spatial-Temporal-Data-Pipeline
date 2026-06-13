@@ -86,3 +86,12 @@ Sesuai prosedur pelaporan:
 - Progres log Minggu 2 ditambahkan di **`UPDATE_STATUS.md`**.
 - File `PROJECT_CONTEXT_v0.1.md` diperbarui menjadi **`PROJECT_CONTEXT_v0.2.md`**.
 - File `Project_Blueprint_v0.3.md` diperbarui menjadi **`Project_Blueprint_v0.4.md`**.
+
+## 8. Status Perkembangan Proyek (Minggu 2 - Bronze to Silver EDA)
+**Fase Saat Ini:** EDA & Perumusan Aturan Validasi Silver
+**Status:** **SELESAI**
+
+**Pencapaian:**
+1. **Penyusunan Laporan EDA:** Mencatat karakteristik data observasi (2.1 Juta vs 60 Juta baris) ke dalam `docs/EDA.md`.
+2. **Penemuan Data Kotor:** Mengidentifikasi data tersensor (`<0.05`), nilai ekstrim (Suhu > 1000°C), dan column-shifting yang akan digunakan sebagai domain threshold di script validasi.
+3. **Anti-OOM Strategy:** Menerapkan push-down aggregation di PySpark saat membaca data 60 juta baris untuk menghindari host memori crash saat membuat plot Pandas.
