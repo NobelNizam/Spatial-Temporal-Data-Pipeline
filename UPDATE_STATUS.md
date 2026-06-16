@@ -67,6 +67,34 @@ Tahap **Exploratory Data Analysis (EDA)** untuk transisi Bronze-to-Silver Layer 
   - Ditemukan column-shifting akibat escaped quotes CSV yang rusak.
 - **Documentation:** Pembuatan `docs/EDA.md`.
 
+---
+
+**Date:** June 16, 2026
+**Location of Update:** `/home/bishamon/proyek/Spatial-Temporal-Data-Pipeline/UPDATE_STATUS.md`
+
+## 1. Reason for Update
+Sesi investigasi dan diskusi mengenai pemetaan stasiun (Join Key) dan implementasi parameter radius kepadatan penduduk yang *scalable* telah selesai. Hasil investigasi membuktikan bahwa kolom `Area` pada dataset Figshare memiliki kesesuaian dengan `samplingPoint.prefLabel` pada dataset WIMS EA, yang menjadi fondasi krusial untuk akurasi pengayaan spasial (Spatial Enrichment). Dokumentasi diperbarui untuk mencerminkan kesiapan strategi implementasi Silver-to-Gold.
+
+## 2. Status Perkembangan Proyek
+- **Fase:** Investigasi Pemetaan Stasiun & Radius Scalable **SELESAI**.
+- **Key Findings:**
+  - `Area` (Figshare) == `samplingPoint.prefLabel` (WIMS EA).
+  - Koordinat stasiun tersedia secara akurat di WIMS EA (WGS84).
+  - Strategi *Broadcast Join* valid digunakan untuk menghubungkan 60jt+ baris fakta dengan tabel dimensi stasiun kecil.
+- **Implementation Strategy:** Radius kepadatan penduduk akan bersifat dinamis (argumen `n-km`) dalam pipeline Gold.
+
+## 3. Komparasi Pembaruan File Rujukan
+
+### A. PROJECT_CONTEXT_v0.4.md (Ditingkatkan dari v0.3.md)
+- **Bagian 1 (Status):** Diubah menjadi "Investigasi Join Key & Radius Scalable Selesai. Siap masuk ke implementasi Silver-Gold."
+- **Bagian 4 (Current Scope):** Menambahkan poin investigasi join key sebagai elemen yang sudah selesai `[x]`.
+- **Bagian 11 (Known Issues):** Mencatat konfirmasi kesesuaian kolom `Area` dan `prefLabel`.
+
+### B. Project_Blueprint_v0.6.md (Ditingkatkan dari v0.5.md)
+- **Bagian 6 (System Architecture):** Menambahkan detail Join Key Investigation dan fleksibilitas radius n-km pada Gold Layer.
+- **Bagian 7 (Development Roadmap):** Mencatat penyelesaian investigasi pemetaan stasiun pada Minggu 2.
+
+
 ## 3. Komparasi Pembaruan File Rujukan
 
 ### A. PROJECT_CONTEXT_v0.3.md (Ditingkatkan dari v0.2.md)
@@ -76,3 +104,26 @@ Tahap **Exploratory Data Analysis (EDA)** untuk transisi Bronze-to-Silver Layer 
 ### B. Project_Blueprint_v0.5.md (Ditingkatkan dari v0.4.md)
 - **Bagian 3 (Functional Requirements):** Menambahkan detail validasi Silver Layer berupa regex stripping dan DROPMALFORMED.
 - **Bagian 6 (System Architecture):** Menjelaskan pemisahan Dimension Extraction dari Fact Table WIMS EA di dalam Silver Layer.
+
+---
+
+**Date:** 16 Juni 2026
+**Location of Update:** `/home/bishamon/proyek/Spatial-Temporal-Data-Pipeline/UPDATE_STATUS.md`
+
+## 1. Reason for Update
+Menyelesaikan *milestone* validasi dan *cleansing* data mentah (*Bronze*) ke *Silver Layer* untuk Fact Table dan Dimension Table.
+
+## 2. Status Perkembangan Proyek
+- **Fase:** Implementasi Silver Layer dan EDA **SELESAI**.
+- **Fact Table (England & WIMS):** Pembersihan karakter sensor (`<`, `>`), standarisasi nama kolom, filter koordinat, dan penghapusan duplikat (>1300 baris duplikat dihilangkan) telah berhasil tanpa memicu OOM (berkat repartitioning 60 juta baris).
+- **Dimension Table (Raster):** Resolusi spasial (`Inner Join` antara area WIMS dan Figshare) sukses mendapatkan irisan pasti 14 stasiun unik. Radius rasterio sukses terkalibrasi secara independen (*absolute path*).
+- **Validasi (EDA):** Notebook eksekusi headless memverifikasi tidak ada *Missing Values* di kolom fundamental dan distribusi nilai WQI/suhu sesuai koridor aturan bisnis (*business logic*).
+- **Lesson Learned:** Manajemen path di dalam kontainer, repartition *Big Data*, dan bahaya kondisional Truthy Python telah ditambahkan di `GEMINI.md`.
+
+## 3. Komparasi Pembaruan File Rujukan
+### A. PROJECT_CONTEXT_v0.5.md (Ditingkatkan dari v0.4.md)
+- **Bagian 1 (Status):** Diubah menjadi "Silver Layer Selesai. Masuk ke implementasi Gold Layer."
+- **Bagian 10 (Pending Tasks):** Poin "Silver Layer — jalur fact table" dan "jalur dimension table" dicentang selesai `[x]`.
+
+### B. Project_Blueprint_v0.7.md (Ditingkatkan dari v0.6.md)
+- **Bagian 7 (Roadmap):** Menyatakan penyelesaian utuh "Minggu 2 — Silver Layer".

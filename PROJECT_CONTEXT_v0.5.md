@@ -8,7 +8,7 @@
 
 - **Nama:** Spatial-Temporal Data Pipeline dengan Justifikasi Engineering Berbasis Bukti
 - **Tujuan:** Membangun pipeline data Bronze-Silver-Gold skala lokal yang menggabungkan data time-series kualitas air (puluhan GB) dengan data kepadatan penduduk (raster WorldPop, 14 stasiun), sambil membuktikan secara empiris (lewat profiling & benchmark) bahwa setiap pilihan teknologi memang dibutuhkan — bukan sekadar mengikuti tren arsitektur enterprise.
-- **Status:** Blueprint v0.3 — Minggu 1 Selesai. Masuk ke implementasi Bronze Ingest.
+- **Status:** Blueprint v0.6 — Investigasi Join Key & Radius Scalable Selesai. Siap masuk ke implementasi Silver-Gold.
 
 ---
 
@@ -31,9 +31,10 @@ Menghasilkan portofolio Data Engineering yang **defensible** di wawancara teknis
 Fitur yang sudah disepakati (sesuai Blueprint v0.2):
 
 - [x] Dataset profiling awal (rows, cols, cardinality, ukuran per partisi) → dasar pemilihan engine
-- [ ] Bronze Layer: ingest raw CSV kualitas air + GeoTIFF WorldPop ke object storage / `data/bronze/`
-- [ ] Silver Layer — jalur fact table: validasi native (null rate, duplikasi, tipe kolom, skema), baris gagal → `data/rejected/`
-- [ ] Silver Layer — jalur dimension table: ekstraksi populasi 14 stasiun via `rasterio` (clip radius, bukan full raster)
+- [x] Bronze Layer: ingest raw CSV kualitas air + GeoTIFF WorldPop ke object storage / `data/bronze/`
+- [x] Investigasi & Bukti Join Key (Area Figshare ↔ prefLabel WIMS) → Dasar akurasi spasial
+- [x] Silver Layer — jalur fact table: validasi native (null rate, duplikasi, tipe kolom, skema), baris gagal → `data/rejected/`
+- [x] Silver Layer — jalur dimension table: ekstraksi populasi 14 stasiun via `rasterio` (clip radius, bukan full raster)
 - [ ] Gold Layer: broadcast join fact table + dimension table, schema enforcement via `StructType`, simpan Parquet terpartisi (`station_id`, `year`)
 - [ ] Data Dictionary (`docs/DATA_DICTIONARY.md`)
 - [ ] Decision Log (`docs/DECISION_LOG.md`)
@@ -132,25 +133,30 @@ Hal-hal yang TIDAK BOLEH dilakukan tanpa diskusi ulang:
 - [x] PROJECT_CONTEXT.md dibuat
 - [x] Profiling dataset kualitas air selesai (23.29 GB)
 - [x] Infrastruktur Docker (MinIO, Dagster, PySpark) aktif. Belum ada kode pipeline.
+- [x] Investigasi Join Key & Radius Scalable selesai.
 
 ---
 
 ## 10. Pending Tasks
 
-1. Jalankan profiling dataset kualitas air (rows, cols, cardinality, ukuran per partisi `station_id`/`year`) → tulis ke `benchmarks/PROFILING_REPORT.md`.
-2. Tetapkan engine final berdasarkan threshold (Bagian 5.1 Blueprint v0.2) → catat di `docs/DECISION_LOG.md`.
-3. Setup Docker untuk object storage (atau fallback filesystem) + engine terpilih.
-4. Implementasi Bronze ingest (CSV kualitas air + GeoTIFF WorldPop).
-5. Implementasi Silver: validasi native (fact table) + ekstraksi dimensi populasi via `rasterio` (14 stasiun).
-6. Implementasi Gold: broadcast join + schema enforcement (`StructType`) + partisi Parquet.
-7. Tulis `docs/DATA_DICTIONARY.md`.
-8. Setup orkestrator ringan (Dagster/Mage.ai) untuk menjalankan DAG Bronze→Silver→Gold.
-9. Implementasi `engine_comparison.py` (Pandas/Polars/DuckDB vs PySpark) → `BENCHMARK_REPORT.md`.
+1. [x] Jalankan profiling dataset kualitas air (rows, cols, cardinality, ukuran per partisi `station_id`/`year`) → tulis ke `benchmarks/PROFILING_REPORT.md`.
+2. [x] Tetapkan engine final berdasarkan threshold (Bagian 5.1 Blueprint v0.2) → catat di `docs/DECISION_LOG.md`.
+3. [x] Setup Docker untuk object storage (atau fallback filesystem) + engine terpilih.
+4. [x] Implementasi Bronze ingest (CSV kualitas air + GeoTIFF WorldPop).
+5. [x] Implementasi Silver: validasi native (fact table) + ekstraksi dimensi populasi via `rasterio` (14 stasiun).
+6. [ ] Implementasi Gold: broadcast join + schema enforcement (`StructType`) + partisi Parquet.
+7. [ ] Tulis `docs/DATA_DICTIONARY.md`.
+8. [x] Setup orkestrator ringan (Dagster) untuk menjalankan DAG Bronze→Silver→Gold.
+9. [ ] Implementasi `engine_comparison.py` (Pandas/Polars/DuckDB vs PySpark) → `BENCHMARK_REPORT.md`.
 
 ---
 
 ## 11. Known Issues
 
+- Ditemukan anomali left-censored (`<0.05`) dan column shifting pada dataset stasiun >60 juta baris. Telah ditangani sempurna di Silver Layer menggunakan `F.regexp_replace` dan *repartition*.
+- Pemetaan Join Key: Kolom `Area` (Figshare) sesuai dengan `samplingPoint.prefLabel` (WIMS). Digunakan untuk Spatial Enrichment.
+- Rasterio tidak bisa menggunakan relative path di PySpark Container, diselesaikan dengan `os.path.abspath`.
+- Logika truthy python `if float(0.0)` gagal dan me-return NULL, diselesaikan dengan konversi eksplisit tanpa if else.
 - Infrastruktur Docker sudah berdiri dan dependensi kontainer telah dimutakhirkan (Dockerfile.dagster dengan boto3, minio, rasterio).
 - Fase Ingestion Layer (Bronze) telah selesai. 326 file raw berhasil diunggah ke MinIO.
 - Hasil profiling sudah selesai (23.29GB, 62.9Jt baris). PySpark resmi dipilih.

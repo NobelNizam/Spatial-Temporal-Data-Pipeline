@@ -95,3 +95,10 @@ Sesuai prosedur pelaporan:
 1. **Penyusunan Laporan EDA:** Mencatat karakteristik data observasi (2.1 Juta vs 60 Juta baris) ke dalam `docs/EDA.md`.
 2. **Penemuan Data Kotor:** Mengidentifikasi data tersensor (`<0.05`), nilai ekstrim (Suhu > 1000°C), dan column-shifting yang akan digunakan sebagai domain threshold di script validasi.
 3. **Anti-OOM Strategy:** Menerapkan push-down aggregation di PySpark saat membaca data 60 juta baris untuk menghindari host memori crash saat membuat plot Pandas.
+
+---
+
+## 10. Investigasi Join Key & Radius Scalable (Juni 2026)
+- **Status:** **SELESAI**
+- **Ringkasan:** Investigasi membuktikan kolom `Area` (Figshare) cocok dengan `samplingPoint.prefLabel` (WIMS). Menetapkan strategi *Broadcast Join* dan implementasi radius kepadatan penduduk yang dinamis (scalable) untuk Gold Layer. Update rujukan ke `PROJECT_CONTEXT_v0.4.md` dan `Project_Blueprint_v0.6.md`.
+

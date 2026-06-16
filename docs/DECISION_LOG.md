@@ -11,10 +11,6 @@
   - Total baris: 62.9 Juta.
 - **Justification:** Ambang batas *threshold* pada Blueprint menetapkan bahwa data di atas 20 GB membutuhkan/membenarkan penggunaan ekosistem distributed/PySpark. Karena data aktual melebihi threshold tersebut, penggunaan PySpark dianggap valid secara fungsional dan operasional, alih-alih menggunakan Pandas (yang rentan OOM pada mesin lokal tunggal) atau sekadar memilih Spark tanpa bukti dataset besar.
 
----
-
-*(Catatan: Keputusan mengenai komponen infrastruktur lainnya akan ditambahkan pada entri berikutnya).*
-
 ## 2. Pemilihan Orkestrator
 - **Date:** June 12, 2026
 - **Status:** **DIPUTUSKAN**
@@ -29,3 +25,16 @@
   - PySpark: `jupyter/pyspark-notebook:spark-3.5.0`
   - Dagster: `dagster/dagster:1.7.5`
 - **Justification:** Mencegah isu *breaking changes* tak terduga dan menjamin *reproducibility* secara absolut sesuai dengan best practices engineering.
+
+## 4. Strategi Pemetaan Stasiun (Join Key Fakta-Dimensi)
+- **Date:** June 16, 2026
+- **Status:** **DIPUTUSKAN**
+- **Decision:** Menggunakan kolom `Area` (Figshare) sebagai kunci join utama yang dipetakan ke `samplingPoint.prefLabel` (WIMS EA) untuk mendapatkan koordinat Lat/Lon.
+- **Evidence:** Investigasi `grep` pada data Bronze membuktikan adanya *exact match* untuk stasiun kunci (seperti "OUSE CASTLE MILLS") dan pola identifikasi stasiun yang konsisten di kedua dataset.
+- **Justification:** Pendekatan ini menghilangkan kebutuhan geocoding eksternal dan menjamin akurasi spasial 100% menggunakan metadata resmi Environment Agency untuk ekstraksi raster WorldPop.
+
+## 5. Implementasi Parameter Radius Scalable
+- **Date:** June 16, 2026
+- **Status:** **DIPUTUSKAN**
+- **Decision:** Parameter radius kepadatan penduduk (`n-km`) diimplementasikan sebagai argumen dinamis dalam pipeline `gold_serve.py`, bukan nilai *hardcoded*.
+- **Justification:** Memenuhi persyaratan fungsional untuk menghasilkan dataset yang fleksibel bagi riset ML, memungkinkan perbandingan dampak kepadatan penduduk pada berbagai skala spasial.

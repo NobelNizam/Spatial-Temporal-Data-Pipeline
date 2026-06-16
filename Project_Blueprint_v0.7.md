@@ -1,6 +1,6 @@
-# Project_Blueprint_v0.4
+# Project_Blueprint_v0.6
 
-> **Catatan Revisi:** Versi ini merevisi v0.2 berdasarkan hasil eksekusi Milestone Minggu 1. Fokus revisi: menyertakan hasil profiling empiris (23.29 GB data) yang memvalidasi keputusan penggunaan PySpark, menetapkan Dagster sebagai orkestrator tunggal, mencatat penyelesaian setup infrastruktur Docker, dan menambahkan manajemen batas memori (OOM Mitigation) pada mesin lokal.
+> **Catatan Revisi:** Versi ini merevisi v0.5 dengan menambahkan strategi pemetaan stasiun yang valid antara dataset Figshare dan WIMS EA, serta mengonfirmasi parameter radius kepadatan penduduk yang bersifat *scalable*.
 
 ## 1. Executive Summary
 
@@ -45,7 +45,7 @@
 
 **MVP (Minimum Viable Product):**
 
-- **Dataset Profiling:** Sebelum implementasi, jalankan profiling pada sampel data kualitas air untuk mencatat jumlah baris, jumlah kolom, kardinalitas kolom kunci, dan estimasi ukuran per partisi `station_id`/`year`. Hasil ini dijadikan dasar keputusan _engine_ (Bagian 5.1).
+- **Dataset Profiling:** Sebelum implementasi, jalankan profiling pada sampel data kualitas air untuk mencatat jumlah baris, jumlah kolom, kardinalitas kolom kolom kunci, dan estimasi ukuran per partisi `station_id`/`year`. Hasil ini dijadikan dasar keputusan _engine_ (Bagian 5.1).
 - **Dimension Table Extraction (Spatial):** Menggunakan `rasterio` untuk mengekstrak nilai kepadatan penduduk dalam radius _n_ km dari koordinat 14 stasiun air, menghasilkan tabel dimensi kecil (14 baris). Proses ini **tidak** memuat seluruh raster Inggris Raya — hanya piksel dalam radius yang ditentukan.
 - **Native Data Validation (Silver Layer):** Validasi ringan menggunakan API _native_ _engine_ terpilih (misalnya `df.filter()`, `df.describe()`, pengecekan `null_rate`, duplikasi, dan tipe kolom) untuk menyaring anomali sebelum _join_. Baris yang gagal validasi dicatat ke log dan/atau dipindahkan ke folder `rejected/` (DLQ sederhana) — bukan dihentikan total.
 - **Broadcast Join & Schema Enforcement (Gold Layer):** Penggabungan tabel fakta kualitas air (hasil validasi) dengan tabel dimensi populasi melalui _broadcast join_ (menghindari _shuffle_ pada data besar). Hasil disimpan sebagai Parquet dengan skema eksplisit (`StructType`) yang didokumentasikan dalam **Data Dictionary** (lihat lampiran `docs/DATA_DICTIONARY.md`).
@@ -121,9 +121,10 @@ Mage.ai dan Airflow secara sengaja tidak digunakan karena _overhead_ operasional
 - **Silver Layer (Validation & Dimension Extraction):**
     - **Jalur Fact Table:** Data kualitas air divalidasi menggunakan fungsi _native_ PySpark (cek _null rate_, duplikasi, tipe kolom, konsistensi skema, regex stripping untuk data tersensor). Baris yang gagal dicatat ke log dan dipindahkan ke `data/rejected/`.
     - **Jalur Dimension Table:** `rasterio` mengekstrak kepadatan populasi untuk 14 stasiun, menghasilkan tabel kecil `station_id, population_density`.
+    - **Join Key Investigation:** Ditemukan bahwa kolom `Area` (Figshare) memiliki kesesuaian dengan `samplingPoint.prefLabel` (WIMS EA), yang memungkinkan penarikan koordinat Lat/Lon secara akurat.
     - **Join:** Tabel fakta (tervalidasi) digabung dengan tabel dimensi (14 baris) via **Broadcast Join**, menghindari _shuffle_ pada dataset besar.
 
-- **Gold Layer (Schema-Enforced Serving):** Hasil _join_ disimpan sebagai Parquet terpartisi berdasarkan `station_id` dan `year`, dengan skema eksplisit (`StructType`). Skema didokumentasikan di `docs/DATA_DICTIONARY.md` yang menjelaskan setiap kolom, tipe, satuan, dan sumber data.
+- **Gold Layer (Schema-Enforced Serving):** Hasil _join_ disimpan sebagai Parquet terpartisi berdasarkan `station_id` dan `year`, dengan skema eksplisit (`StructType`). Skema didokumentasikan di `docs/DATA_DICTIONARY.md`. Penambahan parameter radius kepadatan penduduk bersifat *scalable* (n-km).
 
 - **Observability Backbone:** Orkestrator Dagster menjalankan setiap aset Bronze → Silver → Gold, mencatat _structured log_ (waktu eksekusi, jumlah baris masuk/lolos/ditolak) dan menampilkan DAG eksekusi.
 
@@ -164,9 +165,9 @@ spatial-temporal-pipeline/
 
 **Minggu 1 — Profiling & Infrastructure (SELESAI):** Menjalankan _profiling_ dataset kualitas air (23.29GB) dan menetapkan **PySpark**. Setup Docker untuk MinIO, Dagster, dan PySpark Jupyter dengan limitasi RAM. Menyusun dokumentasi awal.
 
-**Minggu 2 — Silver Layer (Validation & Spatial Dimension):** Implementasi ingesti data (Bronze) selesai, EDA selesai. Dilanjutkan dengan koding validasi _native_ untuk data kualitas air (Regex cleansing untuk left-censored data, DropMalformed untuk column-shifting) (skema, _null rate_, duplikasi) dengan output ke `data/rejected/` untuk baris gagal. Ekstraksi tabel dimensi populasi (14 stasiun) via `rasterio`.
+**Minggu 2 — Silver Layer (Validation & Spatial Dimension):** Implementasi ingesti data (Bronze) selesai, EDA selesai. Investigasi pemetaan stasiun (Area Figshare ↔ prefLabel WIMS) selesai. Dilanjutkan dengan koding validasi _native_ untuk data kualitas air (Regex cleansing untuk left-censored data, DropMalformed untuk column-shifting) (skema, _null rate_, duplikasi) dengan output ke `data/rejected/` untuk baris gagal. Ekstraksi tabel dimensi populasi (14 stasiun) via `rasterio`.
 
-**Minggu 3 — Gold Layer & Schema Enforcement:** Implementasi _broadcast join_ tabel fakta dengan tabel dimensi, definisikan skema eksplisit (`StructType`), simpan ke Parquet terpartisi (`station_id`, `year`), dan susun `DATA_DICTIONARY.md`. Jalankan seluruh _pipeline_ melalui Dagster.
+**Minggu 3 — Gold Layer & Schema Enforcement:** Implementasi _broadcast join_ tabel fakta dengan tabel dimensi, definisikan skema eksplisit (`StructType`), simpan ke Parquet terpartisi (`station_id`, `year`), dan susun `DATA_DICTIONARY.md`. Jalankan seluruh _pipeline_ melalui Dagster. Implementasi radius kepadatan penduduk yang *scalable*.
 
 **Minggu 4 — Benchmarking & Finalization:** Jalankan `engine_comparison.py` membandingkan Pandas/Polars/DuckDB vs PySpark pada dataset aktual (sebagai pengujian hipotesis, hasil apapun valid). Susun `BENCHMARK_REPORT.md` dengan kesimpulan objektif mengenai _engine_ yang tepat untuk skala data ini.
 
