@@ -127,3 +127,27 @@ Menyelesaikan *milestone* validasi dan *cleansing* data mentah (*Bronze*) ke *Si
 
 ### B. Project_Blueprint_v0.7.md (Ditingkatkan dari v0.6.md)
 - **Bagian 7 (Roadmap):** Menyatakan penyelesaian utuh "Minggu 2 — Silver Layer".
+
+---
+
+**Date:** 16 Juni 2026
+**Location of Update:** `/home/bishamon/proyek/Spatial-Temporal-Data-Pipeline/UPDATE_STATUS.md`
+
+## 1. Reason for Update
+Menyelesaikan *milestone* arsitektural *Gold Layer*, mencakup penambahan kamus data (Data Dictionary), implementasi *Schema Enforcement*, pemrosesan dimensi spasial dinamis (*scalable radius*), serta orkestrasi melalui Dagster.
+
+## 2. Status Perkembangan Proyek
+- **Fase:** Implementasi Gold Layer **SELESAI**. Selanjutnya masuk ke tahap akhir yaitu Benchmarking.
+- **Schema Enforcement:** File `docs/DATA_DICTIONARY.md` telah berhasil dirumuskan. Aturan ini diterapkan secara kaku (*strict*) di skrip `gold_serve.py` melalui parameter `StructType` untuk mem-filter setiap kolom anomali yang lolos dari Silver Layer.
+- **Broadcast Join & Partitioning:** Tabel dimensi populasi diregenerasi dengan *parameterized radius* (fleksibel sesuai metrik `n-km`) lalu digabungkan dengan dua tabel fakta (England & WIMS) menggunakan *Broadcast Join*. Output berhasil disimpan dalam dua format di dalam bucket MinIO: 
+  - Format terpartisi berdasarkan `station_id` dan `year` (untuk kueri analitik Big Data).
+  - Format **Single Parquet File** melalui operasi `.coalesce(1)` yang disimpan di path tersendiri agar dapat di-*ingest* dengan mudah oleh model *Machine Learning* lokal menggunakan Pandas tanpa overhead I/O folder.
+- **Orkestrasi Dagster:** Telah ditambahkan *asset* `@asset(deps=[silver_layer_asset]) def gold_layer_asset` di dalam pipeline DAG untuk memastikan alur kerja otomatis dari Bronze → Silver → Gold.
+
+## 3. Komparasi Pembaruan File Rujukan
+### A. PROJECT_CONTEXT_v0.6.md (Ditingkatkan dari v0.5.md)
+- **Bagian 1 (Status):** Diubah menjadi "Gold Layer Selesai. Masuk ke tahap akhir: Benchmarking (Minggu 4)."
+- **Bagian 10 (Pending Tasks):** Poin "Implementasi Gold: broadcast join + schema enforcement + partisi Parquet" dan "Tulis `docs/DATA_DICTIONARY.md`" dicentang selesai `[x]`.
+
+### B. Project_Blueprint_v0.8.md (Ditingkatkan dari v0.7.md)
+- **Bagian 7 (Roadmap):** Menyatakan penyelesaian utuh "Minggu 3 — Gold Layer & Schema Enforcement".

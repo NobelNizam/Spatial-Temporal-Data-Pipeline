@@ -102,3 +102,15 @@ Sesuai prosedur pelaporan:
 - **Status:** **SELESAI**
 - **Ringkasan:** Investigasi membuktikan kolom `Area` (Figshare) cocok dengan `samplingPoint.prefLabel` (WIMS). Menetapkan strategi *Broadcast Join* dan implementasi radius kepadatan penduduk yang dinamis (scalable) untuk Gold Layer. Update rujukan ke `PROJECT_CONTEXT_v0.4.md` dan `Project_Blueprint_v0.6.md`.
 
+---
+
+## 11. Implementasi Silver Layer (Juni 2026)
+- **Status:** **SELESAI**
+- **Ringkasan:** Validasi anomali dan *cleansing* data mentah sukses dijalankan untuk Fact Table dan Dimension Table. Data *left-censored* di WIMS telah di-filter menggunakan regex. Dimensi Spasial diekstrak dari 14 stasiun unik via rasterio. OOM berhasil dimitigasi dengan repartisi 200.
+
+---
+
+## 12. Implementasi Gold Layer (Juni 2026)
+- **Status:** **SELESAI**
+- **Ringkasan:** Menyelesaikan penyusunan `DATA_DICTIONARY.md` dengan *Schema Enforcement* menggunakan `StructType`. Menerapkan *Broadcast Join* pada populasi yang diekstrak dengan radius dinamis (*scalable n-km*), partisi `Parquet` berdasar `station_id` dan `year`. Khusus untuk dataset Gold England, output diekspor dalam 2 versi (Terpartisi dan **Single Parquet**) untuk memfasilitasi kebutuhan Big Data dan ML secara independen. Terintegrasi penuh pada DAG Dagster. Detail selengkapnya pada `UPDATE_STATUS.md`.
+

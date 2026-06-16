@@ -156,12 +156,16 @@ def run_silver_validation():
         dim_records.append({
             "station_id": row["station_id"],
             "area_name": row["Area"],
+            "latitude": row["latitude"],
+            "longitude": row["longitude"],
             "population_density": float(pop_density)
         })
         
     dim_schema = StructType([
         StructField("station_id", StringType(), False),
         StructField("area_name", StringType(), False),
+        StructField("latitude", FloatType(), False),
+        StructField("longitude", FloatType(), False),
         StructField("population_density", FloatType(), True)
     ])
     dim_df = spark.createDataFrame(dim_records, schema=dim_schema)

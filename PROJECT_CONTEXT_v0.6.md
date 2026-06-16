@@ -35,8 +35,8 @@ Fitur yang sudah disepakati (sesuai Blueprint v0.2):
 - [x] Investigasi & Bukti Join Key (Area Figshare ↔ prefLabel WIMS) → Dasar akurasi spasial
 - [x] Silver Layer — jalur fact table: validasi native (null rate, duplikasi, tipe kolom, skema), baris gagal → `data/rejected/`
 - [x] Silver Layer — jalur dimension table: ekstraksi populasi 14 stasiun via `rasterio` (clip radius, bukan full raster)
-- [ ] Gold Layer: broadcast join fact table + dimension table, schema enforcement via `StructType`, simpan Parquet terpartisi (`station_id`, `year`)
-- [ ] Data Dictionary (`docs/DATA_DICTIONARY.md`)
+- [x] Gold Layer: broadcast join fact table + dimension table, schema enforcement via `StructType`, simpan Parquet terpartisi (`station_id`, `year`)
+- [x] Data Dictionary (`docs/DATA_DICTIONARY.md`)
 - [ ] Decision Log (`docs/DECISION_LOG.md`)
 - [ ] Lineage minimal: metadata `source_file`, `processed_at`, `pipeline_run_id` pada setiap output Silver/Gold
 - [ ] Structured logging di setiap task, dikelola orkestrator ringan

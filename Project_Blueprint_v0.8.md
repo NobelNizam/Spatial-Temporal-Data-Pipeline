@@ -167,7 +167,7 @@ spatial-temporal-pipeline/
 
 **Minggu 2 — Silver Layer (Validation & Spatial Dimension):** Implementasi ingesti data (Bronze) selesai, EDA selesai. Investigasi pemetaan stasiun (Area Figshare ↔ prefLabel WIMS) selesai. Dilanjutkan dengan koding validasi _native_ untuk data kualitas air (Regex cleansing untuk left-censored data, DropMalformed untuk column-shifting) (skema, _null rate_, duplikasi) dengan output ke `data/rejected/` untuk baris gagal. Ekstraksi tabel dimensi populasi (14 stasiun) via `rasterio`.
 
-**Minggu 3 — Gold Layer & Schema Enforcement:** Implementasi _broadcast join_ tabel fakta dengan tabel dimensi, definisikan skema eksplisit (`StructType`), simpan ke Parquet terpartisi (`station_id`, `year`), dan susun `DATA_DICTIONARY.md`. Jalankan seluruh _pipeline_ melalui Dagster. Implementasi radius kepadatan penduduk yang *scalable*.
+**Minggu 3 — Gold Layer & Schema Enforcement (SELESAI):** Implementasi _broadcast join_ tabel fakta dengan tabel dimensi, definisikan skema eksplisit (`StructType`), simpan ke Parquet terpartisi (`station_id`, `year`), dan susun `DATA_DICTIONARY.md`. Jalankan seluruh _pipeline_ melalui Dagster. Implementasi radius kepadatan penduduk yang *scalable*.
 
 **Minggu 4 — Benchmarking & Finalization:** Jalankan `engine_comparison.py` membandingkan Pandas/Polars/DuckDB vs PySpark pada dataset aktual (sebagai pengujian hipotesis, hasil apapun valid). Susun `BENCHMARK_REPORT.md` dengan kesimpulan objektif mengenai _engine_ yang tepat untuk skala data ini.
 
@@ -200,4 +200,4 @@ spatial-temporal-pipeline/
 
 **Kriteria 3 (Engineering Defense):** `BENCHMARK_REPORT.md` menyajikan hasil komparasi Pandas/Polars/DuckDB vs PySpark sebagai **pengujian hipotesis objektif**, lengkap dengan kesimpulan jujur.
 
-**Kriteria 4 (Honesty of Claims):** Setiap istilah arsitektur dalam dokumentasi (Schema Enforcement, Broadcast Join, Dimension/Fact Table, dsb.) dapat ditelusuri langsung ke implementasi kode yang sesuai — tidak ada istilah yang digunakan tanpa dukungan implementasi nyata.
+**Kriteria 4 (Honesty of Claims):** Setiap istilah arsitektur dalam dokumentasi (Schema Enforcement, Broadcast Join, Dimension/Fact Table, dsb.) dapat ditelusuri langsung ke implementasi kode yang sesuai — tidak ada istilah yang digunakan tanpa dukungan implementasi nyata.mentasi nyata.
